@@ -17,9 +17,11 @@ Vagrant.configure("2") do |config|
   config.vm.provision "shell", inline: <<-SHELL
     cd ../../vagrant
     sed -i 's/\r$//' mongodb.sh # Fixing line endings
+    sed -i 's/\r//g' config.ini
+    sed -i 's/[ \t]*$//' config.ini
     chmod +x mongodb.sh
     chmod +x config.ini
-    sudo ./mongodb.sh -f config.ini
+    # sudo ./mongodb.sh -f config.ini
     # sudo ./practica.sh -u administrador -p password [-n 27017]
   SHELL
 end

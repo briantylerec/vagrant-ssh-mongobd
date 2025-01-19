@@ -55,6 +55,7 @@ echo "-------- Installing mongodb----------------"
 if [[ -z "$(mongo --version 2> /dev/null | grep '4.2.1')" ]]
 then
   # Instalar paquetes comunes, servidor, shell, balanceador de shards y herramientas
+
   apt-get -y update \
   && apt-get install -y \
   mongodb-org=4.2.1 \
@@ -67,10 +68,11 @@ then
   && pkill -f mongod || true \
   && rm -rf /var/lib/mongodb
 fi
-
 # Crear las carpetas de logs y datos con sus permisos
+
 [[ -d "/datos/bd" ]] || mkdir -p -m 755 "/datos/bd"
 [[ -d "/datos/log" ]] || mkdir -p -m 755 "/datos/log"
+# Establecer el dueño y el grupo de las carpetas db y log
 
 chown mongodb /datos/log /datos/bd
 chgrp mongodb /datos/log /datos/bd
@@ -100,6 +102,7 @@ MONGOD_CONF
 ) > /etc/mongod.conf
 
 # Reiniciar el servicio de mongod para aplicar la nueva configuracion
+
 systemctl restart mongod
 
 echo "Esperando a que MongoDB esté listo para aceptar conexiones..."
@@ -112,19 +115,19 @@ done
 echo "MongoDB está listo para aceptar conexiones."
 
 # Crear usuario con la password proporcionada como parametro
-cat <<EOF > /tmp/create_user.js
-db.createUser({
-  user: "${user}",
-  pwd: "${password}",
-  roles: [
-    {role: "root", db: "admin"},
-    {role: "restore", db: "admin"}
-  ]
-});
-EOF
-sed -i 's/\r//' /tmp/create_user.js
 
-mongo admin /tmp/create_user.js
+mongo admin << CREACION_DE_USUARIO
+db.createUser({
+    user: "${user}",
+    pwd: "${password}",
+    roles:[{
+        role: "root",
+        db: "admin"
+    },{
+        role: "restore",
+        db: "admin"
+}] })
+CREACION_DE_USUARIO
 
 echo "-------- fin --------"
 
